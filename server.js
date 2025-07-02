@@ -21,7 +21,7 @@
 
   // Middleware
 const allowedOrigins = [
-  "https://youtube-dev-finalized-m65t.vercel.app",
+  "https://youtube-dev-finalized.vercel.app",
   "http://localhost:5173"
 ];
 
