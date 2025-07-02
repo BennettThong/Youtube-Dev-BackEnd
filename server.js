@@ -20,7 +20,10 @@ admin.initializeApp({
 const bucket = admin.storage().bucket();
 
 // Middleware
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({
+  origin: 'https://youtube-dev-finalized-m65t.vercel.app',
+  credentials: true
+}));
 app.use(express.json());
 
 // ------------------- MongoDB Connection -------------------
