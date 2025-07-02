@@ -211,6 +211,18 @@ app.post("/login", async (req, res) => {
 
 // Upload Profile Image Route
 app.post('/upload-profile', upload.single('image'), async (req, res) => {
+  const origin = req.headers.origin;
+
+  const allowedOrigins = [
+    "https://youtube-dev-finalized.vercel.app",
+    "http://localhost:5173"
+  ];
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  }
+
   try {
     const file = req.file;
     if (!file) return res.status(400).json({ error: "No file uploaded" });
@@ -231,10 +243,7 @@ app.post('/upload-profile', upload.single('image'), async (req, res) => {
 
     blobStream.on("finish", async () => {
       try {
-        // 🔓 Make file publicly accessible
         await blob.makePublic();
-
-        // ✅ Generate public URL
         const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
         res.status(200).json({ imageUrl: publicUrl });
       } catch (err) {
@@ -249,6 +258,7 @@ app.post('/upload-profile', upload.single('image'), async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 
 
 // ------------------- Shutdown Hook -------------------
