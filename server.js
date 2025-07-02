@@ -20,10 +20,22 @@
   const bucket = admin.storage().bucket();
 
   // Middleware
-  app.use(cors({
-    origin: 'https://youtube-dev-finalized-m65t.vercel.app',
-    credentials: true
-  }));
+const allowedOrigins = [
+  "https://youtube-dev-finalized-m65t.vercel.app",
+  "http://localhost:5173"
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed"));
+    }
+  },
+  credentials: true
+}));
+
   app.use(express.json());
 
 
