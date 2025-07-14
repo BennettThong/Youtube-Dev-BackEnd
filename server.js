@@ -22,6 +22,7 @@ admin.initializeApp({
 });
 const bucket = admin.storage().bucket();
 
+
 // Middleware
 const allowedOrigins = [
   "https://youtube-dev-finalized.vercel.app",
@@ -40,6 +41,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
 
 
 // ------------------- MongoDB Connection -------------------
@@ -224,6 +226,7 @@ app.post('/upload-profile', upload.single('image'), async (req, res) => {
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
   }
 
   try {
