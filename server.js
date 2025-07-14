@@ -12,7 +12,10 @@ const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Firebase Admin Setup
-const serviceAccount = require('./serviceAccountKey.json'); // ensure this file is in your root directory
+const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
+  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON)
+  : require('./serviceAccountKey.json');
+ // ensure this file is in your root directory
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   storageBucket: 'dev-7526d.firebasestorage.app', // replace with your actual bucket name
