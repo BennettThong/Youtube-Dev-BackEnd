@@ -214,13 +214,14 @@ app.post("/login", async (req, res) => {
 });
 
 
-// Upload Profile Image Route
 app.post('/upload-profile', upload.single('image'), async (req, res) => {
-  const origin = req.headers.origin;
+  console.log("📩 /upload-profile hit");
 
+  // Allow cross-origin requests from specific origins
+  const origin = req.headers.origin;
   const allowedOrigins = [
-    "https://youtube-dev-finalized.vercel.app",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "https://youtube-dev-finalized.vercel.app"
   ];
 
   if (allowedOrigins.includes(origin)) {
@@ -229,10 +230,20 @@ app.post('/upload-profile', upload.single('image'), async (req, res) => {
     res.setHeader("Access-Control-Allow-Credentials", "true");
   }
 
-  try {
-    const file = req.file;
-    if (!file) return res.status(400).json({ error: "No file uploaded" });
+  const file = req.file;
 
+  if (!file) {
+    console.error("❌ No file uploaded (req.file is undefined)");
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+
+  console.log("✅ File received:", {
+    name: file.originalname,
+    type: file.mimetype,
+    size: file.size
+  });
+
+  try {
     const fileName = `profile-images/${Date.now()}-${file.originalname}`;
     const blob = bucket.file(fileName);
 
@@ -243,27 +254,32 @@ app.post('/upload-profile', upload.single('image'), async (req, res) => {
     });
 
     blobStream.on("error", (err) => {
-      console.error("❌ Stream error:", err);
-      res.status(500).json({ error: "Upload error" });
+      console.error("❌ Upload stream error:", err);
+      return res.status(500).json({ error: "Upload failed", details: err.message });
     });
 
     blobStream.on("finish", async () => {
       try {
         await blob.makePublic();
         const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-        res.status(200).json({ imageUrl: publicUrl });
+        console.log("✅ File uploaded successfully:", publicUrl);
+        return res.status(200).json({ imageUrl: publicUrl });
       } catch (err) {
-        console.error("❌ Public access error:", err);
-        res.status(500).json({ error: "Failed to make file public" });
+        console.error("❌ Failed to make file public:", err);
+        return res.status(500).json({ error: "Failed to make file public", details: err.message });
       }
     });
 
     blobStream.end(file.buffer);
   } catch (err) {
-    console.error("❌ Upload exception:", err);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("❌ Unexpected server error:", err);
+    return res.status(500).json({ error: "Unexpected server error", details: err.message });
   }
 });
+
+
+
+
 
 
 
