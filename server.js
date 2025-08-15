@@ -72,6 +72,14 @@ app.get("/db-version", async (req, res) => {
   }
 });
 
+
+
+// ------------------- Shutdown Hook -------------------
+process.on('SIGTERM', () => {
+  pool.end(() => {
+    console.log('🛑 PostgreSQL pool closed');
+  });
+});
 // ------------------- Routes -------------------
 
 app.get('/health', (req, res) => {
@@ -279,6 +287,9 @@ app.post('/upload-profile', upload.single('image'), async (req, res) => {
     return res.status(500).json({ error: "Unexpected server error", details: err.message });
   }
 });
+
+const commentsRoutes = require("./routes/comments.routes")(pool, admin);
+app.use("/api", commentsRoutes);
 
 
 
