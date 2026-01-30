@@ -1,1 +1,3 @@
 node_modules
+# Ignore sensitive environment variables
+.env.local
