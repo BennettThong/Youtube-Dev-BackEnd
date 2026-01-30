@@ -7,9 +7,17 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const admin = require('firebase-admin');
 const path = require('path');
+const axios = require('axios');
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
+
+// Load main .env (committed safe keys)
+dotenv.config();
+
+// Load .env.local (ignored, sensitive keys)
+dotenv.config({ path: '.env.local' });
+
 
 // Firebase Admin Setup
 let serviceAccount;
@@ -29,7 +37,8 @@ const bucket = admin.storage().bucket();
 // Middleware
 const allowedOrigins = [
   "https://youtube-dev-finalized.vercel.app",
-  "http://localhost:5173"
+  "http://localhost:5173",
+  "http://localhost:5000"
 ];
 
 app.use(cors({
@@ -224,6 +233,26 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.get("/api/search", async (req, res) => {
+  const { query } = req.query;
+  if (!query) return res.status(400).json({ error: "Missing query" });
+
+  try {
+    const response = await axios.get("https://www.googleapis.com/youtube/v3/search", {
+      params: {
+        part: "snippet",
+        q: query,
+        type: "video",
+        maxResults: 12,
+        key: process.env.YOUTUBE_API_KEY, // API key stays secret
+      },
+    });
+    res.json(response.data.items);
+  } catch (err) {
+    console.error("YouTube API backend error:", err.response?.data || err.message);
+    res.status(500).json({ error: "Failed to fetch videos" });
+  }
+});
 
 app.post('/upload-profile', upload.single('image'), async (req, res) => {
   console.log("📩 /upload-profile hit");
